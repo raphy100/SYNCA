@@ -1,3 +1,6 @@
+
+'use client';
+
 import Link from 'next/link';
 import {
   Calendar,
@@ -14,6 +17,18 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
 import { UserNav } from '@/components/layout/user-nav';
 import { SyncaLogo } from '@/components/icons';
 
@@ -22,6 +37,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { toast } = useToast()
   const navItems = [
     { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
     { href: '/dashboard/events', icon: Calendar, label: 'Events' },
@@ -29,6 +45,14 @@ export default function DashboardLayout({
     { href: '/dashboard/reports', icon: BarChart3, label: 'Reports' },
     { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
+
+  const handlePanic = () => {
+    toast({
+        variant: "destructive",
+        title: "Panic Alert Triggered",
+        description: "Emergency services have been notified and your location has been shared.",
+    })
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -91,10 +115,26 @@ export default function DashboardLayout({
           <div className="relative ml-auto flex-1 md:grow-0">
             {/* Can be used for a search bar later */}
           </div>
-          <Button variant="destructive" className="gap-2">
-            <ShieldAlert className="h-5 w-5" />
-            <span className="hidden md:inline">Panic</span>
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="gap-2">
+                <ShieldAlert className="h-5 w-5" />
+                <span className="hidden md:inline">Panic</span>
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will immediately notify emergency services and share your current location. This should only be used in a genuine emergency.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handlePanic}>Confirm Panic</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <UserNav />
         </header>
         <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
