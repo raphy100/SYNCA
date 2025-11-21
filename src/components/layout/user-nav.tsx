@@ -14,9 +14,19 @@ import {
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { LogOut, User, Settings, LifeBuoy } from "lucide-react";
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
 
 export function UserNav() {
-    const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+  const { toast } = useToast();
+  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+
+  const handleHelpAndSupportClick = () => {
+    toast({
+      title: "Help & Support",
+      description: "This feature is not yet implemented.",
+    });
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -38,17 +48,21 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/settings">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleHelpAndSupportClick}>
           <LifeBuoy className="mr-2 h-4 w-4" />
           <span>Help & Support</span>
         </DropdownMenuItem>
