@@ -24,10 +24,10 @@ export default function DashboardLayout({
 }) {
   const navItems = [
     { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
-    { href: '#', icon: Calendar, label: 'Events' },
-    { href: '#', icon: MessageSquare, label: 'Communications' },
-    { href: '#', icon: BarChart3, label: 'Reports' },
-    { href: '#', icon: Settings, label: 'Settings' },
+    { href: '/dashboard/events', icon: Calendar, label: 'Events' },
+    { href: '/dashboard/communications', icon: MessageSquare, label: 'Communications' },
+    { href: '/dashboard/reports', icon: BarChart3, label: 'Reports' },
+    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
 
   return (
