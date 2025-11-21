@@ -32,13 +32,6 @@ export default function LoginPage() {
     });
   };
 
-  const handleSignUp = () => {
-     toast({
-      title: "Sign Up",
-      description: "This feature is not yet implemented.",
-    });
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm">
@@ -90,7 +83,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
-            <Link href="#" className="underline" onClick={(e) => { e.preventDefault(); handleSignUp(); }}>
+            <Link href="/auth/signup" className="underline">
               Sign up
             </Link>
           </div>
