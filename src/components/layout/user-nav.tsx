@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,18 +15,9 @@ import {
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { LogOut, User, Settings, LifeBuoy } from "lucide-react";
 import Link from 'next/link';
-import { useToast } from "@/hooks/use-toast";
 
 export function UserNav() {
-  const { toast } = useToast();
   const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
-
-  const handleHelpAndSupportClick = () => {
-    toast({
-      title: "Help & Support",
-      description: "This feature is not yet implemented.",
-    });
-  }
 
   return (
     <DropdownMenu>
@@ -62,9 +54,11 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleHelpAndSupportClick}>
-          <LifeBuoy className="mr-2 h-4 w-4" />
-          <span>Help & Support</span>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/help-and-support">
+            <LifeBuoy className="mr-2 h-4 w-4" />
+            <span>Help & Support</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
