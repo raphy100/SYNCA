@@ -31,17 +31,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-const upcomingEvents = [
+import { useState } from 'react';
+
+const initialUpcoming = [
   { id: '1', name: 'Annual Charity Gala', date: '2024-08-15', location: 'Grand Ballroom', status: 'Planned' },
   { id: '2', name: 'Tech Conference 2024', date: '2024-09-20', location: 'Convention Center', status: 'Planned' },
 ];
 
-const pastEvents = [
+const initialPast = [
   { id: '3', name: 'Town Hall Meeting', date: '2024-06-10', location: 'City Hall', status: 'Completed' },
   { id: '4', name: 'Summer Festival', date: '2024-07-22', location: 'Central Park', status: 'Completed' },
 ];
 
 export default function EventsPage() {
+  const [upcomingEvents, setUpcomingEvents] = useState(initialUpcoming);
+  const [pastEvents] = useState(initialPast);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [date, setDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+
+  const createEvent = () => {
+    if (!name || !date) return;
+
+    const newEvent = {
+      id: Date.now().toString(),
+      name,
+      date,
+      location,
+      status: 'Planned',
+    };
+
+    setUpcomingEvents((s) => [newEvent, ...s]);
+    // reset form
+    setName('');
+    setDate('');
+    setLocation('');
+    setDescription('');
+    setOpen(false);
+  };
+
   return (
     <div className="grid gap-6">
       <Card>
@@ -50,9 +80,9 @@ export default function EventsPage() {
             <CardTitle>Events</CardTitle>
             <CardDescription>Manage upcoming and past events.</CardDescription>
           </div>
-          <Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => setOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add New Event
               </Button>
@@ -64,21 +94,21 @@ export default function EventsPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="eventName">Event Name</Label>
-                  <Input id="eventName" placeholder="e.g., Annual Charity Gala" />
+                  <Input id="eventName" placeholder="e.g., Annual Charity Gala" value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="eventDate">Date</Label>
-                  <Input id="eventDate" type="date" />
+                  <Input id="eventDate" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="eventLocation">Location</Label>
-                  <Input id="eventLocation" placeholder="e.g., Grand Ballroom" />
+                  <Input id="eventLocation" placeholder="e.g., Grand Ballroom" value={location} onChange={(e) => setLocation(e.target.value)} />
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="eventDescription">Description</Label>
-                  <Textarea id="eventDescription" placeholder="Provide a brief description of the event." />
+                  <Textarea id="eventDescription" placeholder="Provide a brief description of the event." value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
-                <Button className="w-full">Create Event</Button>
+                <Button className="w-full" onClick={createEvent}>Create Event</Button>
               </div>
             </DialogContent>
           </Dialog>

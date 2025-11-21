@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -14,21 +14,20 @@ import { Label } from '@/components/ui/label';
 import { SyncaLogo } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-export default function SignupPage() {
+export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -43,22 +42,17 @@ export default function SignupPage() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
-      
-      toast({
-        title: 'Account Created',
-        description: "You've been successfully signed up! Please sign in.",
-      });
-      router.push('/auth/login');
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: 'Signed in', description: 'Welcome back!' });
+      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Sign-up Failed',
+        title: 'Sign-in Failed',
         description: error.message,
       });
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -69,23 +63,11 @@ export default function SignupPage() {
           <div className="mb-4 flex justify-center">
             <SyncaLogo className="h-12 w-12" />
           </div>
-          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-          <CardDescription>
-            Enter your details to get started with SYNCA.
-          </CardDescription>
+          <CardTitle className="text-2xl font-headline">Sign In</CardTitle>
+          <CardDescription>Enter your credentials to continue.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4" onSubmit={handleSignUp}>
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="Jane Doe"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
+          <form className="grid gap-4" onSubmit={handleLogin}>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -111,17 +93,17 @@ export default function SignupPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
+                  Signing in...
                 </>
               ) : (
-                'Sign Up'
+                'Sign In'
               )}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Already have an account?{' '}
-            <Link href="/auth/login" className="underline">
-              Login
+            Don't have an account?{' '}
+            <Link href="/auth/signup" className="underline">
+              Sign up
             </Link>
           </div>
         </CardContent>

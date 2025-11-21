@@ -1,5 +1,8 @@
 
-'use client';
+"use client";
+
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 import {
   Card,
@@ -36,10 +39,10 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const reportData = [
-  { id: '1', title: 'Q2 Security Summary', date: '2024-07-01', type: 'Quarterly' },
-  { id: '2', title: 'Town Hall Incident Report', date: '2024-06-11', type: 'Incident' },
-  { id: '3', title: 'Annual Security Review', date: '2024-01-15', type: 'Annual' },
+const initialReportData = [
+  { id: '1', title: 'Q2 Security Summary', date: '2024-07-01', type: 'Quarterly', content: 'Summary of Q2 incidents and actions.' },
+  { id: '2', title: 'Town Hall Incident Report', date: '2024-06-11', type: 'Incident', content: 'Details of the Town Hall incident.' },
+  { id: '3', title: 'Annual Security Review', date: '2024-01-15', type: 'Annual', content: 'Comprehensive annual security review.' },
 ];
 
 const chartData = [
@@ -53,6 +56,46 @@ const chartData = [
 
 
 export default function ReportsPage() {
+  const [reports, setReports] = useState(initialReportData);
+  const [filter, setFilter] = useState('all');
+  const { toast } = useToast();
+
+  const generateReport = () => {
+    // Create a simple mock report entry
+    const now = new Date();
+    const id = Date.now().toString();
+    const title = `Generated Report ${now.toLocaleString()}`;
+    const date = now.toISOString().split('T')[0];
+    const type = 'Generated';
+    const content = `Auto-generated report at ${now.toLocaleString()}`;
+
+    const newReport = { id, title, date, type, content };
+    setReports((s) => [newReport, ...s]);
+    toast({ title: 'Report Generated', description: `Created "${title}"` });
+  };
+
+  const downloadReport = (report: { id: string; title: string; date: string; type: string; content?: string }) => {
+    // Create CSV content for the report
+    const headers = ['Title', 'Date', 'Type', 'Content'];
+    const rows = [
+      [report.title, report.date, report.type, report.content ?? ''],
+    ];
+
+    const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${report.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast({ title: 'Download started', description: `Downloading ${report.title}` });
+  };
+
+  const filteredReports = reports.filter((r) => filter === 'all' ? true : (r.type || '').toLowerCase() === filter);
+
   return (
     <div className="grid gap-6">
         <Card>
@@ -87,19 +130,20 @@ export default function ReportsPage() {
           <div className="flex justify-between items-center mb-4 gap-2">
             <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select defaultValue="all">
+                <Select onValueChange={(v) => setFilter(v)} defaultValue="all">
                 <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by type" />
+                  <SelectValue placeholder="Filter by type" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                    <SelectItem value="incident">Incident</SelectItem>
-                    <SelectItem value="annual">Annual</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="incident">Incident</SelectItem>
+                  <SelectItem value="annual">Annual</SelectItem>
+                  <SelectItem value="generated">Generated</SelectItem>
                 </SelectContent>
                 </Select>
             </div>
-            <Button>Generate New Report</Button>
+            <Button onClick={generateReport}>Generate New Report</Button>
           </div>
           <Table>
             <TableHeader>
@@ -111,13 +155,13 @@ export default function ReportsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reportData.map((report) => (
+              {filteredReports.map((report) => (
                 <TableRow key={report.id}>
                   <TableCell className="font-medium">{report.title}</TableCell>
                   <TableCell>{report.date}</TableCell>
                   <TableCell>{report.type}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
                       <Download className="mr-2 h-4 w-4" />
                       Download
                     </Button>

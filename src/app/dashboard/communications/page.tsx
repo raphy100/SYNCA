@@ -20,6 +20,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,7 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Send, PlusCircle, Trash2 } from 'lucide-react';
 
-const teamMembers = [
+const initialTeams = [
   { id: '1', name: 'Alpha Team', status: 'Active' },
   { id: '2', name: 'Bravo Team', status: 'Standby' },
   { id: '3', name: 'Charlie Team', status: 'Offline' },
@@ -46,6 +53,23 @@ const messageLogs = [
 
 export default function CommunicationsPage() {
   const [recipients, setRecipients] = useState<string[]>([]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [open, setOpen] = useState(false);
+  const [teamName, setTeamName] = useState('');
+  const [teamStatus, setTeamStatus] = useState('Active');
+
+  const createTeam = () => {
+    if (!teamName.trim()) return;
+    const newTeam = { id: Date.now().toString(), name: teamName.trim(), status: teamStatus };
+    setTeams((s) => [newTeam, ...s]);
+    setTeamName('');
+    setTeamStatus('Active');
+    setOpen(false);
+  };
+
+  const deleteTeam = (id: string) => {
+    setTeams((s) => s.filter((t) => t.id !== id));
+  };
 
   return (
     <div className="grid gap-6">
@@ -71,12 +95,12 @@ export default function CommunicationsPage() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select team or member" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Teams</SelectItem>
-                      {teamMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>{member.name}</SelectItem>
-                      ))}
-                    </SelectContent>
+                      <SelectContent>
+                        <SelectItem value="all">All Teams</SelectItem>
+                        {teams.map((member) => (
+                          <SelectItem key={member.id} value={member.name}>{member.name}</SelectItem>
+                        ))}
+                      </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
@@ -96,9 +120,40 @@ export default function CommunicationsPage() {
             <TabsContent value="teams">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">Security Teams</h3>
-                <Button size="sm">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Team
-                </Button>
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" onClick={() => setOpen(true)}>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add Team
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create Team</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="teamName">Team Name</Label>
+                        <Input id="teamName" placeholder="e.g., Delta Team" value={teamName} onChange={(e) => setTeamName(e.target.value)} />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="teamStatus">Status</Label>
+                        <Select onValueChange={(v) => setTeamStatus(v)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Active" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Standby">Standby</SelectItem>
+                            <SelectItem value="Offline">Offline</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button className="ml-auto" onClick={createTeam}>Create Team</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
               <Table>
                 <TableHeader>
@@ -109,7 +164,7 @@ export default function CommunicationsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teamMembers.map((member) => (
+                  {teams.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell className="font-medium">{member.name}</TableCell>
                       <TableCell>
@@ -121,7 +176,7 @@ export default function CommunicationsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={() => deleteTeam(member.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>

@@ -3,12 +3,25 @@
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Read configuration from environment variables so the real keys
+// aren't checked into source control. These must be defined in
+// a `.env.local` file (for local development) or in your hosting
+// provider environment settings.
+const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+if (!apiKey || apiKey === 'TODO: YOUR API KEY') {
+  throw new Error(
+    'Missing NEXT_PUBLIC_FIREBASE_API_KEY. Please add your Firebase web app configuration to `.env.local` as described in the project README.'
+  );
+}
+
 export const firebaseConfig = {
-  apiKey: "TODO: YOUR API KEY",
-  authDomain: "TODO: YOUR AUTH DOMAIN",
-  projectId: "TODO: YOUR PROJECT ID",
-  storageBucket: "TODO: YOUR STORAGE BUCKET",
-  messagingSenderId: "TODO: YOUR MESSAGING SENDER ID",
-  appId: "TODO: YOUR APP ID",
-  measurementId: "TODO: YOUR MEASUREMENT ID",
+  apiKey,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId:
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || undefined,
 };

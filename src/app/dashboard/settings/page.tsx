@@ -1,6 +1,7 @@
 
-'use client';
+"use client";
 
+import { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -20,8 +21,85 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/firebase';
+import { updateProfile, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
+  const auth = useAuth();
+  const { toast } = useToast();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [reauthOpen, setReauthOpen] = useState(false);
+  const [reauthPassword, setReauthPassword] = useState('');
+  const [reauthLoading, setReauthLoading] = useState(false);
+
+  useEffect(() => {
+    if (!auth) return;
+    const user = auth.currentUser;
+    if (user) {
+      setName(user.displayName ?? '');
+      setEmail(user.email ?? '');
+    }
+  }, [auth]);
+
+  const handleUpdateProfile = async () => {
+    if (!auth) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Auth not available' });
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Error', description: 'No signed-in user' });
+      return;
+    }
+
+    const emailChanged = email !== (user.email ?? '');
+
+    // If email changed, require re-authentication before calling updateEmail
+    if (emailChanged) {
+      setReauthOpen(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Update displayName only
+      await updateProfile(user, { displayName: name });
+      toast({ title: 'Profile Updated', description: 'Your display name has been updated.' });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Update Failed', description: err.message || String(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmEmailChange = async () => {
+    if (!auth) return;
+    const user = auth.currentUser;
+    if (!user) return;
+
+    setReauthLoading(true);
+    try {
+      // Reauthenticate with current email + password
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email || '', reauthPassword));
+      // Now update the email
+      await updateEmail(user, email);
+      // Also update displayName if changed
+      await updateProfile(user, { displayName: name });
+      toast({ title: 'Profile Updated', description: 'Email and display name updated.' });
+      setReauthOpen(false);
+      setReauthPassword('');
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Re-auth Failed', description: err.message || String(err) });
+    } finally {
+      setReauthLoading(false);
+    }
+  };
+
   return (
     <div className="grid gap-6">
       <Card>
@@ -35,16 +113,38 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="Jane Doe" />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue="jane.doe@example.com" />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled />
             </div>
           </div>
-          <Button>Update Profile</Button>
+          <Button onClick={handleUpdateProfile} disabled={loading}>
+            {loading ? 'Updating...' : 'Update Profile'}
+          </Button>
         </CardContent>
       </Card>
+
+      <Dialog open={reauthOpen} onOpenChange={setReauthOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Email Change</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Current Password</Label>
+              <Input id="current-password" type="password" value={reauthPassword} onChange={(e) => setReauthPassword(e.target.value)} />
+            </div>
+            <div className="flex gap-2">
+              <Button className="ml-auto" onClick={confirmEmailChange} disabled={reauthLoading}>
+                {reauthLoading ? 'Confirming...' : 'Confirm Email Change'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
 
       <Separator />
 
