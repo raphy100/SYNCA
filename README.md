@@ -216,13 +216,3 @@ This repository is published under the MIT License. If you prefer a different li
 _Assumption_: License was not provided in the Product Requirements Document; I selected MIT as a permissive default. Change it if you have a different preference.
 
 ---
-
-If you'd like, I can:
-
-- Add screenshots and badges
-- Generate a `.env.example` file
-- Add a quickstart `docs/quickstart.md` with screenshots and onboarding steps
-- Scaffold tests or a deployment GitHub Action
-
-Tell me which of the above you'd like next and I'll implement it.
-
